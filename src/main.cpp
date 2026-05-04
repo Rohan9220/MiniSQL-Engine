@@ -1,3 +1,5 @@
+
+
 #include <iostream>
 #include <vector>
 #include "../include/parser.h"
@@ -21,27 +23,86 @@ int main()
         if(query == "EXIT")
             break;
 
-        // Step 1: Parse Query
-        ParsedQuery pq = parseInsertQuery(query);
+        if(query.empty())
+            continue;
 
-        // Step 2: Load Metadata
+        // Step 1: Parse
+        ParsedQuery pq = parseQuery(query);
+
+        // ❗ Invalid query check
+        if(pq.queryType.empty())
+        {
+            cout << "Invalid Query\n";
+            continue;
+        }
+
+        // Step 2: Load schema
         vector<Column> schema = loadMetadata(pq.tableName);
 
-        // Step 3: Validate Insert
-        if(!validateInsert(pq.values, schema))
+        if(schema.empty())
         {
-            cout << "Insert Failed\n";
+            cout << "Error: Table not found\n";
             continue;
         }
 
-        // Step 4: Insert Record into table file
-        if(!insertRecord(pq.tableName, pq.values))
+        // ---------------- INSERT ----------------
+        if(pq.queryType == "INSERT")
         {
-            cout << "Insert Failed\n";
-            continue;
+            if(!validateInsert(pq.values, schema))
+            {
+                cout << "Insert Failed\n";
+                continue;
+            }
+
+            if(!insertRecord(pq.tableName, pq.values))
+            {
+                cout << "Insert Failed\n";
+                continue;
+            }
+
+            cout << "Insert Successful\n";
         }
 
-        cout << "Insert Successful\n";
+        // ---------------- UPDATE ----------------
+        else if(pq.queryType == "UPDATE")
+        {
+            if(!validateUpdate(pq, schema))
+            {
+                cout << "Update Failed\n";
+                continue;
+            }
+
+            if(!updateRecords(pq))
+            {
+                cout << "Update Failed\n";
+                continue;
+            }
+
+            cout << "Update Successful\n";
+        }
+
+        // ---------------- DELETE ----------------
+        else if(pq.queryType == "DELETE")
+        {
+            if(!validateDelete(pq, schema))
+            {
+                cout << "Delete Failed\n";
+                continue;
+            }
+
+            if(!deleteRecords(pq))
+            {
+                cout << "Delete Failed\n";
+                continue;
+            }
+
+            cout << "Delete Successful\n";
+        }
+
+        else
+        {
+            cout << "Unsupported Query\n";
+        }
     }
 
     return 0;

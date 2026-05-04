@@ -1,3 +1,4 @@
+
 #include "../include/metadata.h"
 #include <fstream>
 #include <sstream>
@@ -15,22 +16,23 @@ vector<Column> loadMetadata(string tableName)
 
     if(!file)
     {
-        cout << "Error: Metadata file not found\n";
+        cout << "Error: Metadata file not found for table: " 
+             << tableName << endl;
         return schema;
     }
 
     int columnCount;
     file >> columnCount;
 
-    file.ignore(); // remove newline after number
+    file.ignore(); // skip newline after number
 
     for(int i = 0; i < columnCount; i++)
     {
         string line;
-
         getline(file, line);
 
-        if(line.empty())   // skip empty line
+        // skip empty lines safely
+        if(line.empty())
         {
             i--;
             continue;
@@ -42,6 +44,7 @@ vector<Column> loadMetadata(string tableName)
 
         ss >> col.name >> col.type;
 
+        // constraint optional
         if(!(ss >> col.constraint))
             col.constraint = "NONE";
 
@@ -49,6 +52,12 @@ vector<Column> loadMetadata(string tableName)
     }
 
     file.close();
+
+    if(schema.size() != columnCount)
+    {
+        cout << "Warning: Metadata mismatch in table "
+             << tableName << endl;
+    }
 
     return schema;
 }
