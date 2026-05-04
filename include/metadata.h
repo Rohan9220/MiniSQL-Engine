@@ -1,8 +1,10 @@
+
+
 // #ifndef METADATA_H
 // #define METADATA_H
 
-// #include <string>
 // #include <vector>
+// #include <string>
 
 // using namespace std;
 
@@ -17,6 +19,7 @@
 
 // #endif
 
+
 #ifndef METADATA_H
 #define METADATA_H
 
@@ -30,6 +33,10 @@ struct Column
     string name;
     string type;
     string constraint;
+
+    // 🔥 NEW (for FOREIGN KEY support)
+    string refTable;
+    string refColumn;
 };
 
 vector<Column> loadMetadata(string tableName);
